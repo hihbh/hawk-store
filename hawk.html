@@ -226,7 +226,7 @@
     <div id="cart-list"></div>
     <div id="cart-footer" style="margin-top:20px; display:none;">
       <h3 id="total-price" style="text-align:right; margin-bottom:15px;"></h3>
-      <button class="btn-main btn-blue" onclick="openCheckout()">Order All via WhatsApp</button>
+      <button class="btn-main btn-blue" onclick="openCheckout()">Order All </button>
     </div>
 </div>
 
@@ -244,7 +244,7 @@
         <input type="text" id="cust-name" placeholder="Your Full Name">
         <input type="tel" id="cust-phone" placeholder="Phone Number">
         <textarea id="cust-address" rows="3" placeholder="Shipping Address"></textarea>
-        <button class="btn-main btn-blue" onclick="sendOrderToWhatsApp()">Confirm & Send to WhatsApp</button>
+        <button class="btn-main btn-blue" onclick="sendOrderToWhatsApp()">Confirm Order</button>
     </div>
 </div>
 
@@ -529,7 +529,7 @@ function removeFromCart(idx) {
 
 function openCheckout() { 
     if(cart.length === 0 && currentProduct) {
-        addToCart();
+        
     }
     showView('checkout'); 
 }
