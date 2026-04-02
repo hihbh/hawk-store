@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+  <title>Hawk Store </title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --brand-blue: #3260C4;
+      --white: #ffffff;
+      --light-gray: #f4f7f9;
+      --accent: #FFD814;
+      --whatsapp-green: #25D366;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { 
+      font-family: 'Montserrat', sans-serif; 
+      background-color: var(--white); 
+      color: var(--brand-blue); 
+      margin: 0; 
+      padding-bottom: 90px; 
+      overflow-x: hidden; /* ضروري لمنع اهتزاز البانر */
+    }
+
+    header { 
+      position: sticky; top: 0; background: var(--white); padding: 15px; 
+      display: flex; justify-content: space-between; align-items: center;
+      z-index: 1000; box-shadow: 0 2px 10px rgba(50, 96, 196, 0.1); 
+    }
+    .logo-img { height: 35px; }
+
+    .search-area { padding: 10px 15px; }
+    .search-input {
+      width: 100%; padding: 12px 20px; border-radius: 25px;
+      border: 1px solid #ddd; outline: none; background: var(--light-gray); color: var(--brand-blue);
+    }
+
+    /* إصلاح البانر ليكون احترافي */
+    .promo-banner {
+      width: 100%; /* العودة للـ 100% لتجنب مشاكل الهوامش */
+      height: 180px; 
+      overflow: hidden; 
+      position: relative; 
+      cursor: pointer;
+      margin: 10px 0 20px 0;
+    }
+    .banner-track { 
+      display: flex; 
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+      height: 100%; 
+    }
+    .banner-img { 
+        min-width: 100%; 
+        height: 100%; 
+        object-fit: cover; 
+    }
+
+    .view-section { display: none; padding: 15px; animation: fadeIn 0.3s; }
+    #home.view-section { padding: 0; }
+    .view-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 15px; }
+    .card { background: var(--light-gray); border-radius: 18px; padding: 12px; position: relative; text-align: center; border: 1px solid #eee; }
+    .card .img-box { width: 100%; height: 140px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .card .img-box img { width: 100%; height: 100%; object-fit: contain; }
+
+    .fav-btn { position: absolute; top: 15px; right: 15px; font-size: 24px; color: #ccc; z-index: 20; cursor: pointer; transition: 0.3s; }
+    .fav-btn.active { color: #ff4d4d !important; }
+
+    #details.view-section { padding: 15px; }
+    .slider-container { position: relative; width: 100%; height: 280px; background: #fff; border-radius: 25px; overflow: hidden; border: 1px solid #eee; }
+    .slider-track { display: flex; transition: transform 0.4s ease; height: 100%; }
+    .slide { flex: 0 0 100%; display: flex; align-items: center; justify-content: center; }
+    .slide img { width: 100%; height: 100%; object-fit: contain; }
+    .slider-nav { position: absolute; top: 50%; width: 100%; display: flex; justify-content: space-between; transform: translateY(-50%); padding: 0 10px; z-index: 5; }
+    .arrow { background: rgba(255,255,255,0.9); border: none; font-size: 20px; border-radius: 50%; width: 40px; height: 40px; color: var(--brand-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
+
+    .color-dot { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid #eee; display: inline-block; margin-right: 8px; }
+    .color-dot.selected { border-color: var(--brand-blue); transform: scale(1.1); }
+    .size-chip { border: 1px solid #ddd; padding: 8px 15px; border-radius: 10px; cursor: pointer; display: inline-block; margin-right: 5px; }
+    .size-chip.selected { background: var(--brand-blue); color: white; border-color: var(--brand-blue); }
+
+    .product-qty-box { 
+      display: flex; align-items: center; justify-content: center; 
+      gap: 20px; margin: 20px 0; background: var(--light-gray); 
+      padding: 10px; border-radius: 12px; width: fit-content;
+    }
+    .qty-btn-circle { 
+      width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--brand-blue); 
+      background: white; color: var(--brand-blue); font-size: 20px; font-weight: bold; cursor: pointer;
+    }
+
+    .list-item { background: var(--light-gray); border-radius: 15px; padding: 12px; margin-bottom: 10px; display: flex; gap: 12px; align-items: center; border: 1px solid #eee; }
+    .list-img { width: 55px; height: 55px; background: white; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+
+    nav { 
+        position: fixed; bottom: 0; width: 100%; background: var(--brand-blue); height: 75px; 
+        display: flex; justify-content: space-around; align-items: center; 
+        border-radius: 25px 25px 0 0; z-index: 1500; 
+    }
+    .nav-btn { color: rgba(255,255,255,0.6); text-align: center; font-size: 10px; cursor: pointer; flex: 1; display: flex; flex-direction: column; align-items: center; }
+    .nav-btn.active { color: white; font-weight: bold; }
+    .nav-btn span { display: block; font-size: 20px; margin-bottom: 3px; }
+
+    .cart-circle { 
+        background: white; width: 60px; height: 60px; border-radius: 50%; color: var(--brand-blue); 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        margin-top: -35px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); border: none;
+    }
+
+    .btn-main { border: none; border-radius: 12px; padding: 15px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
+    .btn-blue { background: var(--brand-blue); color: white; }
+
+    .order-form input, .order-form textarea { width: 100%; background: var(--light-gray); border: 1px solid #ddd; padding: 12px; border-radius: 10px; margin-bottom: 12px; outline: none; }
+    
+    .other-products-section { margin-top: 40px; border-top: 2px solid var(--light-gray); padding-top: 20px; }
+    .other-products-section h3 { margin-bottom: 15px; font-size: 18px; }
+
+    .share-btn-float {
+        position: absolute; top: 15px; left: 15px; width: 40px; height: 40px;
+        background: white; border: 2px solid var(--brand-blue); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--brand-blue); font-size: 18px; z-index: 25; cursor: pointer;
+    }
+
+    .share-menu {
+        display: none; position: fixed; bottom: 0; left: 0; width: 100%;
+        background: white; border-radius: 20px 20px 0 0; padding: 20px;
+        z-index: 2000; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); animation: slideUp 0.3s;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .share-option { 
+        display: flex; align-items: center; gap: 15px; padding: 15px;
+        border-radius: 12px; background: var(--light-gray); margin-bottom: 10px; cursor: pointer;
+    }
+
+    .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1900; }
+  </style>
+</head>
+<body onclick="closeShare()">
+
+<header>
+  <img src="WhatsApp Image 2026-03-31 at 10.52.28 PM.jpeg" class="logo-img">
+  <div style="display:flex; gap:15px;">
+    <a href="https://www.facebook.com/share/1BHngEJiKi/" target="_blank" style="color:var(--brand-blue)"><i class="fab fa-facebook-f"></i></a>
+    <a href="https://www.instagram.com/hawk_k11?igsh=dnY1YTlrOHk3dHQ5" target="_blank" style="color:var(--brand-blue)"><i class="fab fa-instagram"></i></a>
+  </div>
+</header>
+
+<div id="home" class="view-section active">
+  <div class="search-area">
+    <input type="text" class="search-input" placeholder="Search Hawk Products..." oninput="searchApp(this.value)">
+  </div>
+
+  <div class="promo-banner" onclick="nextBanner()">
+    <div class="banner-track" id="banner-track">
+      <img src="WhatsApp Image 2026-03-30 at 12.26.11 AM.jpeg" class="banner-img">
+      <img src="WhatsApp Image 2026-03-31 at 10.52.28 PM.jpeg" class="banner-img">
+    </div>
+  </div>
+  <div class="grid" id="product-grid"></div>
+</div>
+
+<div id="offers" class="view-section">
+    <h2>Exclusive Offers 🏷️</h2>
+    <div class="list-item" style="background:linear-gradient(45deg, #FFD700, #FFA500); color:black; border:none;">
+      <div class="list-img">🔥</div><div><b>Bundle Offer</b><br><small>Buy 2 Get 1 Free on Hoodies!</small></div>
+    </div>
+    <div class="list-item" style="background:var(--brand-blue); color:white; border:none;">
+      <div class="list-img">👕</div><div><b>Hawk Classic Sale</b><br><small>20% Off on all Classic Tees</small></div>
+    </div>
+</div>
+
+<div id="details" class="view-section">
+  <button style="background:none; border:1px solid var(--brand-blue); color:var(--brand-blue); padding:5px 15px; border-radius:20px; margin-bottom:10px;" onclick="showView('home')">← Back</button>
+  <div class="slider-container">
+    <div class="share-btn-float" onclick="event.stopPropagation(); openShareMenu()">
+        <i class="fas fa-share-alt"></i>
+    </div>
+    <div class="slider-nav">
+      <button class="arrow" onclick="changeSlide(-1)">❮</button>
+      <button class="arrow" onclick="changeSlide(1)">❯</button>
+    </div>
+    <div class="slider-track" id="slider-track"></div>
+  </div>
+  <h2 id="det-title" style="margin:20px 0 5px;"></h2>
+  <h3 id="det-price" style="opacity:0.7; margin-bottom:15px;"></h3>
+  
+  <div style="margin-bottom:15px;"><label>Color: <span id="color-name" style="font-weight:bold"></span></label><div id="color-picker" style="margin-top:10px;"></div></div>
+  
+  <div style="margin-bottom:15px;"><label>Size:</label><div id="size-picker" style="margin-top:10px;">
+    <div class="size-chip" onclick="selectSize(this)">S</div>
+    <div class="size-chip selected" onclick="selectSize(this)">M</div>
+    <div class="size-chip" onclick="selectSize(this)">L</div>
+    <div class="size-chip" onclick="selectSize(this)">XL</div>
+  </div></div>
+
+  <div class="product-qty-box">
+    <button class="qty-btn-circle" onclick="changeDetailQty(-1)">-</button>
+    <span id="detail-qty-value" style="font-weight:bold; font-size:18px;">1</span>
+    <button class="qty-btn-circle" onclick="changeDetailQty(1)">+</button>
+  </div>
+
+  <div style="display:flex; gap:10px; margin-top:20px;">
+    <button class="btn-main" style="background:#eee; color:#333;" onclick="addToCart()">Add to Cart</button>
+    <button class="btn-main btn-blue" onclick="openCheckout()">Order Now</button>
+  </div>
+
+  <div class="other-products-section">
+    <h3>Other Products 🦅</h3>
+    <div class="grid" id="other-products-grid"></div>
+  </div>
+</div>
+
+<div id="favorites" class="view-section">
+    <h2>My Favorites ❤️</h2>
+    <div id="fav-list"></div>
+</div>
+
+<div id="cart" class="view-section">
+    <h2>Shopping Cart 🛒</h2>
+    <div id="cart-list"></div>
+    <div id="cart-footer" style="margin-top:20px; display:none;">
+      <h3 id="total-price" style="text-align:right; margin-bottom:15px;"></h3>
+      <button class="btn-main btn-blue" onclick="openCheckout()">Order All </button>
+    </div>
+</div>
+
+<div id="about" class="view-section">
+    <h2>Who Us? 🦅</h2>
+    <div style="line-height:1.6; background:var(--light-gray); padding:20px; border-radius:20px; border:1px solid #eee;">
+        <p><b>Hawk Store</b> is your ultimate destination for premium fashion and high-quality street wear.</p>
+    </div>
+</div>
+
+<div id="checkout" class="view-section">
+    <button style="background:none; border:1px solid var(--brand-blue); color:var(--brand-blue); padding:5px 15px; border-radius:20px; margin-bottom:20px;" onclick="showView('cart')">← Back</button>
+    <div class="order-form">
+        <h2>Checkout Details</h2>
+        <input type="text" id="cust-name" placeholder="Your Full Name">
+        <input type="tel" id="cust-phone" placeholder="Phone Number">
+        <textarea id="cust-address" rows="3" placeholder="Shipping Address"></textarea>
+        <button class="btn-main btn-blue" onclick="sendOrderToWhatsApp()">Confirm Order</button>
+    </div>
+</div>
+
+<div class="overlay" id="share-overlay"></div>
+<div class="share-menu" id="share-menu" onclick="event.stopPropagation()">
+    <h3 style="margin-top:0">Share Product 📤</h3>
+    <div class="share-option" onclick="shareToWhatsApp()">
+        <i class="fab fa-whatsapp" style="color:var(--whatsapp-green); font-size:24px;"></i>
+        <span>Share via WhatsApp</span>
+    </div>
+    <div class="share-option" onclick="copyProductLink()">
+        <i class="fas fa-link" style="color:var(--brand-blue); font-size:20px;"></i>
+        <span>Copy Product Link</span>
+    </div>
+    <button class="btn-main" style="margin-top:10px; background:#ddd;" onclick="closeShare()">Cancel</button>
+</div>
+
+<nav>
+  <div class="nav-btn active" onclick="showView('home', this)"><span>🏠</span>Home</div>
+  <div class="nav-btn" onclick="showView('offers', this)"><span>🏷️</span>Offers</div>
+  <div class="cart-btn-wrapper">
+    <button class="cart-circle nav-btn" onclick="showView('cart', this)">
+        <i class="fas fa-shopping-cart"></i>
+    </button>
+  </div>
+  <div class="nav-btn" onclick="showView('favorites', this)"><span>❤️</span>Favs</div>
+  <div class="nav-btn" onclick="showView('about', this)"><span>🦅</span>Who Us</div>
+</nav>
+
+<script>
+// Function to display media or a placeholder icon on error
+function displayMedia(media) {
+    if (!media) return '';
+    return `<img src="${media}" alt="Product" onerror="this.parentElement.innerHTML='🖼️'">`;
+}
+window.onload = function() {
+    renderHome(); // عرض المنتجات الأول
+    updateCartBadge(); // تحديث السلة
+    
+    // التأكد لو الرابط جاي من "شير" لمنتج معين
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('product');
+    
+    if (productId) {
+        // لو لقى رقم منتج، يفتح تفاصيله فوراً
+        openDetails(parseInt(productId));
+    }
+};
+const products = [
+  { id: 1, name: "Hawk Classic T-shirt", price: 300 , variants: [
+      { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-01 at 6.02.04 PM.jpeg','WhatsApp Image 2026-04-01 at 6.02.05 PM.jpeg'] },
+     
+    ] 
+  },
+  { id: 2, name: "Sakr T-shirt", price: 300, variants: [
+      { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-01 at 5.30.08 PM.jpeg','WhatsApp Image 2026-04-01 at 5.30.08 PM (3).jpeg'] },
+      { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-01 at 5.30.08 PM (1).jpeg','WhatsApp Image 2026-04-01 at 5.30.08 PM (2).jpeg'] }
+    ] 
+  },
+  { id: 3, name: "Sportif T-shirt", price: 250, variants: [
+      { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-01 at 5.46.27 PM.jpeg','WhatsApp Image 2026-04-01 at 5.46.28 PM.jpeg'] },
+      { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-01 at 5.30.08 PM (1).jpeg','WhatsApp Image 2026-04-01 at 5.46.42 PM.jpeg'] }
+    ] 
+  },
+  { id: 4, name: "Talon Hawk T-shirt", price: 300, variants: [
+      { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-01 at 6.03.59 PM.jpeg','WhatsApp Image 2026-04-01 at 6.03.59 PM (1).jpeg'] }
+    ] 
+  }
+];
+
+// Global Variables
+let cart = [], favorites = [], currentProduct = null, currentVariant = null, selectedSize = "M", currentSlide = 0, detailQty = 1;
+
+// Update Cart Badge (Red Circle)
+function updateCartBadge() {
+    const badge = document.getElementById('cart-count');
+    if (badge) {
+        const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+        badge.innerText = totalItems;
+        badge.style.display = totalItems > 0 ? 'block' : 'none';
+    }
+}
+
+// Search Functionality
+function searchProducts(query) {
+    const filtered = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+    renderHome(filtered);
+}
+function searchApp(val) { searchProducts(val); }
+
+// Automatic Banner Logic
+let currentBanner = 0;
+function nextBanner() {
+    const track = document.getElementById('banner-track');
+    if(track) {
+        currentBanner = (currentBanner + 1) % 2;
+        track.style.transform = `translateX(-${currentBanner * 100}%)`;
+    }
+}
+setInterval(nextBanner, 4000);
+
+// View Navigation
+function showView(id, btn) {
+    document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+    const targetView = document.getElementById(id);
+    if(targetView) targetView.classList.add('active');
+    
+    if(btn) {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    
+    if(id === 'cart') renderCartUI();
+    if(id === 'favorites') renderFavUI();
+}
+
+// Render Products on Home Page
+function renderHome(data = products) {
+  const grid = document.getElementById('product-grid');
+  if(!grid) return;
+  grid.innerHTML = data.map(p => `
+    <div class="card" onclick="openDetails(${p.id})">
+      <div class="fav-btn ${favorites.includes(p.id)?'active':''}" onclick="event.stopPropagation(); toggleFav(${p.id})">♥</div>
+      <div class="img-box">${displayMedia(p.variants[0].images[0])}</div>
+      <div style="margin-top:10px; font-weight:600;">${p.name}</div>
+      <div style="color:var(--brand-blue); font-weight:bold;">EGP ${p.price}</div>
+    </div>
+  `).join('');
+}
+
+// Favorites Logic
+function toggleFav(id) {
+    if(favorites.includes(id)) favorites = favorites.filter(fid => fid !== id);
+    else favorites.push(id);
+    renderHome();
+}
+
+function renderFavUI() {
+    const list = document.getElementById('fav-list');
+    if(!list) return;
+    const favItems = products.filter(p => favorites.includes(p.id));
+    if(favItems.length === 0) { list.innerHTML = "<p style='text-align:center;'>No favorites yet.</p>"; return; }
+    list.innerHTML = favItems.map(p => `
+        <div class="list-item" onclick="openDetails(${p.id})">
+            <div class="list-img">${displayMedia(p.variants[0].images[0])}</div>
+            <div style="flex:1"><b>${p.name}</b></div>
+            <div style="color:red">❤️</div>
+        </div>
+    `).join('');
+}
+
+// Open Product Details
+function openDetails(id) {
+  currentProduct = products.find(p => p.id === id);
+  currentVariant = currentProduct.variants[0];
+  selectedSize = "M";
+  detailQty = 1;
+  
+  const qtyEl = document.getElementById('detail-qty-value');
+  if(qtyEl) qtyEl.innerText = detailQty;
+  
+  document.getElementById('det-title').innerText = currentProduct.name;
+  document.getElementById('det-price').innerText = `EGP ${currentProduct.price}`;
+  document.getElementById('color-name').innerText = currentVariant.name;
+  
+  const colPicker = document.getElementById('color-picker');
+  colPicker.innerHTML = currentProduct.variants.map((v, i) => 
+    `<div class="color-dot ${i==0?'selected':''}" style="background:${v.hex}" onclick="selectColor(${i}, this)"></div>`
+  ).join('');
+  
+  updateSlider(); 
+  renderOtherProducts(id);
+  showView('details');
+  window.scrollTo(0,0);
+}
+
+function changeDetailQty(delta) {
+    detailQty += delta;
+    if(detailQty < 1) detailQty = 1;
+    document.getElementById('detail-qty-value').innerText = detailQty;
+}
+
+function renderOtherProducts(currentId) {
+    const grid = document.getElementById('other-products-grid');
+    if(!grid) return;
+    const others = products.filter(p => p.id !== currentId);
+    grid.innerHTML = others.map(p => `
+        <div class="card" onclick="openDetails(${p.id})">
+            <div class="img-box">${displayMedia(p.variants[0].images[0])}</div>
+            <div style="font-size:12px; margin-top:5px;">${p.name}</div>
+            <div style="font-weight:bold; font-size:12px;">EGP ${p.price}</div>
+        </div>
+    `).join('');
+}
+
+function selectColor(index, el) {
+  currentVariant = currentProduct.variants[index];
+  document.getElementById('color-name').innerText = currentVariant.name;
+  el.parentElement.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected'); 
+  updateSlider();
+}
+
+function updateSlider() {
+  const track = document.getElementById('slider-track');
+  if(!track) return;
+  track.innerHTML = currentVariant.images.map(img => `<div class="slide">${displayMedia(img)}</div>`).join('');
+  track.style.transform = `translateX(0)`;
+  currentSlide = 0;
+}
+
+function changeSlide(dir) {
+    const max = currentVariant.images.length;
+    const track = document.getElementById('slider-track');
+    if(!track) return;
+    currentSlide = (currentSlide + dir + max) % max;
+    track.style.transform = `translateX(-${currentSlide * 100}%)`;
+}
+
+function selectSize(el) {
+    document.querySelectorAll('.size-chip').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedSize = el.innerText;
+}
+
+// Cart System
+function addToCart() {
+    const existing = cart.find(i => i.id === currentProduct.id && i.color === currentVariant.name && i.size === selectedSize);
+    if(existing) {
+        existing.qty += detailQty;
+    } else {
+        cart.push({ 
+            id: currentProduct.id, 
+            name: currentProduct.name, 
+            price: currentProduct.price, 
+            color: currentVariant.name, 
+            size: selectedSize, 
+            img: currentVariant.images[0],
+            qty: detailQty 
+        });
+    }
+    updateCartBadge();
+    alert("Added to cart successfully! ✅");
+}
+
+function renderCartUI() {
+    const list = document.getElementById('cart-list');
+    const footer = document.getElementById('cart-footer');
+    if(!list) return;
+    
+    if(cart.length === 0) { 
+        list.innerHTML = "<p style='text-align:center; padding:20px;'>Your cart is empty. 🛒</p>"; 
+        if(footer) footer.style.display="none"; 
+        return; 
+    }
+    
+    if(footer) footer.style.display="block";
+    let total = 0;
+    list.innerHTML = cart.map((item, idx) => {
+        total += item.price * item.qty;
+        return `
+        <div class="list-item">
+            <div class="list-img">${displayMedia(item.img)}</div>
+            <div style="flex:1">
+                <b>${item.name}</b><br><small>${item.color} | ${item.size}</small><br>
+                <small>Qty: ${item.qty}</small>
+            </div>
+            <div style="font-weight:bold;">EGP ${item.price * item.qty}</div>
+            <button onclick="removeFromCart(${idx})" style="border:none; background:none; color:red; font-size:20px; padding:0 10px;">×</button>
+        </div>`;
+    }).join('');
+    
+    const totalEl = document.getElementById('total-price');
+    if(totalEl) totalEl.innerText = `Total: EGP ${total}`;
+}
+
+function removeFromCart(idx) {
+    cart.splice(idx, 1);
+    renderCartUI();
+    updateCartBadge();
+}
+
+function openCheckout() { 
+    if(cart.length === 0 && currentProduct) {
+        
+    }
+    showView('checkout'); 
+}
+
+// WhatsApp Order Sending (English Format)
+function sendOrderToWhatsApp() {
+    const name = document.getElementById('cust-name').value;
+    const phone = document.getElementById('cust-phone').value;
+    const address = document.getElementById('cust-address').value;
+    
+    if(!name || !phone || !address) { alert("Please fill all required fields! ✍️"); return; }
+    if(cart.length === 0) { alert("Your cart is empty!"); return; }
+    
+    let orderText = `*New Order from Hawk Store 🦅*%0A%0A`;
+    orderText += `*Customer Info:*%0A`;
+    orderText += `- Name: ${name}%0A`;
+    orderText += `- Phone: ${phone}%0A`;
+    orderText += `- Address: ${address}%0A%0A`;
+    orderText += `*Order Items:*%0A`;
+    
+    let grandTotal = 0;
+    cart.forEach((item, index) => {
+        const itemTotal = item.price * item.qty;
+        grandTotal += itemTotal;
+        orderText += `${index + 1}. *${item.name}*%0A`;
+        orderText += `   Color: ${item.color} | Size: ${item.size}%0A`;
+        orderText += `   Qty: ${item.qty} × ${item.price} = ${itemTotal} EGP%0A%0A`;
+    });
+    
+    orderText += `*Grand Total: ${grandTotal} EGP*`;
+    
+    window.open(`https://wa.me/20 11 18022353?text=${orderText}`);
+}
+
+function openShareMenu() {
+    document.getElementById('share-overlay').style.display = 'block';
+    document.getElementById('share-menu').style.display = 'block';
+}
+
+function closeShare() {
+    document.getElementById('share-overlay').style.display = 'none';
+    document.getElementById('share-menu').style.display = 'none';
+}
+
+function copyProductLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => alert("Link Copied!"));
+}
+
+function shareToWhatsApp() {
+    const text = `Check this out on Hawk Store: ${currentProduct.name} - ${window.location.href}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+}
+function shareToWhatsApp() {
+    // بنضيف رقم المنتج للرابط
+    const shareUrl = window.location.origin + window.location.pathname + `?product=${currentProduct.id}`;
+    const text = `Check this out on Hawk Store: ${currentProduct.name} - ${shareUrl}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+}
+
+function copyProductLink() {
+    const shareUrl = window.location.origin + window.location.pathname + `?product=${currentProduct.id}`;
+    navigator.clipboard.writeText(shareUrl).then(() => alert("Product Link Copied!"));
+}
+
+// Initial Load
+document.addEventListener('DOMContentLoaded', () => {
+    renderHome();
+    updateCartBadge();
+});
+</script>
+</body>
+</html>
