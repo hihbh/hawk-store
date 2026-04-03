@@ -158,7 +158,7 @@
 
   <div class="promo-banner" onclick="nextBanner()">
     <div class="banner-track" id="banner-track">
-      <img src="WhatsApp Image 2026-03-30 at 12.26.11 AM.jpeg" class="banner-img">
+      <img src="WhatsApp Image 2026-04-03 at 2.37.34 PM.jpeg" class="banner-img">
       <img src="WhatsApp Image 2026-03-31 at 10.52.28 PM.jpeg" class="banner-img">
     </div>
   </div>
@@ -168,11 +168,9 @@
 <div id="offers" class="view-section">
     <h2>Exclusive Offers 🏷️</h2>
     <div class="list-item" style="background:linear-gradient(45deg, #FFD700, #FFA500); color:black; border:none;">
-      <div class="list-img">🔥</div><div><b>Bundle Offer</b><br><small>Buy 2 Get 1 Free on Hoodies!</small></div>
+      <div class="list-img">🔥</div><div><b>No offer yet</b><br><small> </small></div>
     </div>
-    <div class="list-item" style="background:var(--brand-blue); color:white; border:none;">
-      <div class="list-img">👕</div><div><b>Hawk Classic Sale</b><br><small>20% Off on all Classic Tees</small></div>
-    </div>
+    
 </div>
 
 <div id="details" class="view-section">
@@ -196,7 +194,7 @@
     <div class="size-chip" onclick="selectSize(this)">S</div>
     <div class="size-chip selected" onclick="selectSize(this)">M</div>
     <div class="size-chip" onclick="selectSize(this)">L</div>
-    <div class="size-chip" onclick="selectSize(this)">XL</div>
+    
   </div></div>
 
   <div class="product-qty-box">
@@ -233,7 +231,7 @@
 <div id="about" class="view-section">
     <h2>Who Us? 🦅</h2>
     <div style="line-height:1.6; background:var(--light-gray); padding:20px; border-radius:20px; border:1px solid #eee;">
-        <p><b>Hawk Store</b> is your ultimate destination for premium fashion and high-quality street wear.</p>
+        <p><b>Hawk Store</b> is Precision.Speed.Power.Hawk is the armor for the modern athlete.We combine elite fabrics whith a fearless attitude to help you reach your peak.No limits.Just results.Wear the power.  </p>
     </div>
 </div>
 
@@ -295,24 +293,31 @@ window.onload = function() {
 };
 const products = [
   { id: 1, name: "Hawk Classic T-shirt", price: 300 , variants: [
-      { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-01 at 6.02.04 PM.jpeg','WhatsApp Image 2026-04-01 at 6.02.05 PM.jpeg'] },
+      { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-03 at 2.15.22 PM (1).jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] },
      
     ] 
   },
   { id: 2, name: "Sakr T-shirt", price: 300, variants: [
-      { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-01 at 5.30.08 PM.jpeg','WhatsApp Image 2026-04-01 at 5.30.08 PM (3).jpeg'] },
-      { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-01 at 5.30.08 PM (1).jpeg','WhatsApp Image 2026-04-01 at 5.30.08 PM (2).jpeg'] }
+      { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-03 at 3.06.22 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] },
+      { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.21 PM (3).jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
   },
   { id: 3, name: "Sportif T-shirt", price: 250, variants: [
-      { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-01 at 5.46.27 PM.jpeg','WhatsApp Image 2026-04-01 at 5.46.28 PM.jpeg'] },
-      { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-01 at 5.30.08 PM (1).jpeg','WhatsApp Image 2026-04-01 at 5.46.42 PM.jpeg'] }
+      { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-03 at 2.15.21 PM (1).jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] },
+      { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.21 PM (2).jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
   },
   { id: 4, name: "Talon Hawk T-shirt", price: 300, variants: [
-      { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-01 at 6.03.59 PM.jpeg','WhatsApp Image 2026-04-01 at 6.03.59 PM (1).jpeg'] }
+      { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.22 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
-  }
+  },
+   { id: 5, name: "Spider T-shirt", price: 300 , variants: [
+      { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-03 at 2.15.19 PM (1).jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] },
+      { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.19 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
+    ] 
+     
+    
+  },
 ];
 
 // Global Variables
@@ -541,7 +546,7 @@ function sendOrderToWhatsApp() {
     const address = document.getElementById('cust-address').value;
     
     if(!name || !phone || !address) { alert("Please fill all required fields! ✍️"); return; }
-    if(cart.length === 0) { alert("Your cart is empty!"); return; }
+   
     
     let orderText = `*New Order from Hawk Store 🦅*%0A%0A`;
     orderText += `*Customer Info:*%0A`;
@@ -561,7 +566,7 @@ function sendOrderToWhatsApp() {
     
     orderText += `*Grand Total: ${grandTotal} EGP*`;
     
-    window.open(`https://wa.me/20 11 18022353?text=${orderText}`);
+    window.open(`https://wa.me/201118022353?text=${orderText}`);
 }
 
 function openShareMenu() {
