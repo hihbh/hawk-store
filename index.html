@@ -532,17 +532,21 @@ function removeFromCart(idx) {
     updateCartBadge();
 }
 
+let isQuickOrder = false; // متغير جديد للتمييز
+
 function openCheckout() { 
-    // لو السلة فاضية، هنعتبر المنتج اللي العميل واقف عليه هو الطلب
-    if(cart.length === 0 && currentProduct) {
-        // مش هنضيفه للسلة بشكل دائم، بس هنفتح صفحة البيانات
-        showView('checkout');
-    } else if (cart.length > 0) {
-        // لو في حاجات في السلة أصلاً، يفتح صفحة البيانات عادي
-        showView('checkout');
+    // لو العميل داس Order Now من صفحة المنتج
+    if (document.getElementById('details').classList.contains('active')) {
+        isQuickOrder = true; 
     } else {
-        alert("Please select a product first! 🦅");
+        isQuickOrder = false;
     }
+
+    if (cart.length === 0 && !currentProduct) {
+        alert("Please select a product first! 🦅");
+        return;
+    }
+    showView('checkout'); 
 }
 
 // WhatsApp Order Sending (English Format)
@@ -554,15 +558,21 @@ function sendOrderToWhatsApp() {
     if(!name || !phone || !address) { alert("Please fill all fields! ✍️"); return; }
 
     let orderText = `*New Order from Hawk Store 🦅*%0A%0A`;
-    orderText += `*Customer Info:*%0A`;
-    orderText += `- Name: ${name}%0A`;
-    orderText += `- Phone: ${phone}%0A`;
-    orderText += `- Address: ${address}%0A%0A`;
-    orderText += `*Order Details:*%0A`;
+    orderText += `*Customer Info:*%0A- Name: ${name}%0A- Phone: ${phone}%0A- Address: ${address}%0A%0A`;
 
-    // الحالة الأولى: لو السلة فيها منتجات
-    if (cart.length > 0) {
+    // لو هو "طلب سريع" من صفحة المنتج (حتى لو السلة فيها حاجات تانية)
+    if (isQuickOrder && currentProduct) {
+        const itemTotal = currentProduct.price * detailQty;
+        orderText += `*Quick Order (Direct):*%0A`;
+        orderText += `1. *${currentProduct.name}*%0A`;
+        orderText += `   Color: ${currentVariant.name} | Size: ${selectedSize}%0A`;
+        orderText += `   Qty: ${detailQty} × ${currentProduct.price} = ${itemTotal} EGP%0A%0A`;
+        orderText += `*Total: ${itemTotal} EGP*`;
+    } 
+    // لو العميل داخل من صفحة السلة نفسها (الـ Cart)
+    else if (cart.length > 0) {
         let grandTotal = 0;
+        orderText += `*Cart Items:*%0A`;
         cart.forEach((item, index) => {
             const itemTotal = item.price * item.qty;
             grandTotal += itemTotal;
@@ -571,14 +581,6 @@ function sendOrderToWhatsApp() {
             orderText += `   Qty: ${item.qty} × ${item.price} = ${itemTotal} EGP%0A%0A`;
         });
         orderText += `*Grand Total: ${grandTotal} EGP*`;
-    } 
-    // الحالة الثانية: طلب مباشر لمنتج واحد (بدون سلة)
-    else if (currentProduct) {
-        const itemTotal = currentProduct.price * detailQty;
-        orderText += `1. *${currentProduct.name}*%0A`;
-        orderText += `   Color: ${currentVariant.name} | Size: ${selectedSize}%0A`;
-        orderText += `   Qty: ${detailQty} × ${currentProduct.price} = ${itemTotal} EGP%0A%0A`;
-        orderText += `*Grand Total: ${itemTotal} EGP*`;
     }
 
     window.open(`https://wa.me/201118022353?text=${orderText}`);
