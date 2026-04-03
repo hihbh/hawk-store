@@ -533,10 +533,16 @@ function removeFromCart(idx) {
 }
 
 function openCheckout() { 
+    // لو السلة فاضية، هنعتبر المنتج اللي العميل واقف عليه هو الطلب
     if(cart.length === 0 && currentProduct) {
-        
+        // مش هنضيفه للسلة بشكل دائم، بس هنفتح صفحة البيانات
+        showView('checkout');
+    } else if (cart.length > 0) {
+        // لو في حاجات في السلة أصلاً، يفتح صفحة البيانات عادي
+        showView('checkout');
+    } else {
+        alert("Please select a product first! 🦅");
     }
-    showView('checkout'); 
 }
 
 // WhatsApp Order Sending (English Format)
@@ -545,30 +551,38 @@ function sendOrderToWhatsApp() {
     const phone = document.getElementById('cust-phone').value;
     const address = document.getElementById('cust-address').value;
     
-    if(!name || !phone || !address) { alert("Please fill all required fields! ✍️"); return; }
-   
-    
+    if(!name || !phone || !address) { alert("Please fill all fields! ✍️"); return; }
+
     let orderText = `*New Order from Hawk Store 🦅*%0A%0A`;
     orderText += `*Customer Info:*%0A`;
     orderText += `- Name: ${name}%0A`;
     orderText += `- Phone: ${phone}%0A`;
     orderText += `- Address: ${address}%0A%0A`;
-    orderText += `*Order Items:*%0A`;
-    
-    let grandTotal = 0;
-    cart.forEach((item, index) => {
-        const itemTotal = item.price * item.qty;
-        grandTotal += itemTotal;
-        orderText += `${index + 1}. *${item.name}*%0A`;
-        orderText += `   Color: ${item.color} | Size: ${item.size}%0A`;
-        orderText += `   Qty: ${item.qty} × ${item.price} = ${itemTotal} EGP%0A%0A`;
-    });
-    
-    orderText += `*Grand Total: ${grandTotal} EGP*`;
-    
+    orderText += `*Order Details:*%0A`;
+
+    // الحالة الأولى: لو السلة فيها منتجات
+    if (cart.length > 0) {
+        let grandTotal = 0;
+        cart.forEach((item, index) => {
+            const itemTotal = item.price * item.qty;
+            grandTotal += itemTotal;
+            orderText += `${index + 1}. *${item.name}*%0A`;
+            orderText += `   Color: ${item.color} | Size: ${item.size}%0A`;
+            orderText += `   Qty: ${item.qty} × ${item.price} = ${itemTotal} EGP%0A%0A`;
+        });
+        orderText += `*Grand Total: ${grandTotal} EGP*`;
+    } 
+    // الحالة الثانية: طلب مباشر لمنتج واحد (بدون سلة)
+    else if (currentProduct) {
+        const itemTotal = currentProduct.price * detailQty;
+        orderText += `1. *${currentProduct.name}*%0A`;
+        orderText += `   Color: ${currentVariant.name} | Size: ${selectedSize}%0A`;
+        orderText += `   Qty: ${detailQty} × ${currentProduct.price} = ${itemTotal} EGP%0A%0A`;
+        orderText += `*Grand Total: ${itemTotal} EGP*`;
+    }
+
     window.open(`https://wa.me/201118022353?text=${orderText}`);
 }
-
 function openShareMenu() {
     document.getElementById('share-overlay').style.display = 'block';
     document.getElementById('share-menu').style.display = 'block';
