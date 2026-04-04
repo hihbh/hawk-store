@@ -55,7 +55,7 @@
     .banner-img { 
         min-width: 100%; 
         height: 100%; 
-        object-fit: cover; 
+        object-fit: fill; 
     }
 
     .view-section { display: none; padding: 15px; animation: fadeIn 0.3s; }
@@ -160,6 +160,7 @@
     <div class="banner-track" id="banner-track">
       <img src="offer1.jpeg" class="banner-img">
       <img src="WhatsApp Image 2026-03-31 at 10.52.28 PM.jpeg" class="banner-img">
+      <img src="WhatsApp Image 2026-03-30 at 12.26.11 AM.jpeg" class="banner-img">
     </div>
   </div>
   <div class="grid" id="product-grid"></div>
@@ -345,7 +346,7 @@ let currentBanner = 0;
 function nextBanner() {
     const track = document.getElementById('banner-track');
     if(track) {
-        currentBanner = (currentBanner + 1) % 2;
+        currentBanner = (currentBanner + 1) % 3;
         track.style.transform = `translateX(-${currentBanner * 100}%)`;
     }
 }
@@ -498,34 +499,55 @@ function addToCart() {
 function renderCartUI() {
     const list = document.getElementById('cart-list');
     const footer = document.getElementById('cart-footer');
-    if(!list) return;
-    
-    if(cart.length === 0) { 
-        list.innerHTML = "<p style='text-align:center; padding:20px;'>Your cart is empty. 🛒</p>"; 
+    if(!list || cart.length === 0) { 
+        if(list) list.innerHTML = "<p style='text-align:center; padding:20px;'>Your cart is empty. 🛒</p>"; 
         if(footer) footer.style.display="none"; 
         return; 
     }
     
-    if(footer) footer.style.display="block";
-    let total = 0;
+    footer.style.display="block";
+    let subTotal = 0;
+    let totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+
+    // تحديد أرخص سعر في السلة
+    let minPrice = Math.min(...cart.map(item => item.price));
+    let discountApplied = false;
+
     list.innerHTML = cart.map((item, idx) => {
-        total += item.price * item.qty;
+        subTotal += item.price * item.qty;
+        
+        // هل دي القطعة الأرخص وهل تحقق شرط الـ 3 قطع؟
+        let showDiscountLabel = "";
+        if (totalQty >= 3 && item.price === minPrice && !discountApplied) {
+            showDiscountLabel = `<br><span style="color:green; font-size:12px; font-weight:bold;">🔥 50% Off on this item!</span>`;
+            discountApplied = true; // عشان نطبق الخصم على قطعة واحدة بس لو في كذا قطعة بنفس السعر
+        }
+
         return `
         <div class="list-item">
             <div class="list-img">${displayMedia(item.img)}</div>
             <div style="flex:1">
-                <b>${item.name}</b><br><small>${item.color} | ${item.size}</small><br>
+                <b>${item.name}</b> ${showDiscountLabel}<br>
+                <small>${item.color} | ${item.size}</small><br>
                 <small>Qty: ${item.qty}</small>
             </div>
             <div style="font-weight:bold;">EGP ${item.price * item.qty}</div>
-            <button onclick="removeFromCart(${idx})" style="border:none; background:none; color:red; font-size:20px; padding:0 10px;">×</button>
+            <button onclick="removeFromCart(${idx})" style="border:none; background:none; color:red; font-size:20px;">×</button>
         </div>`;
     }).join('');
-    
-    const totalEl = document.getElementById('total-price');
-    if(totalEl) totalEl.innerText = `Total: EGP ${total}`;
-}
 
+    let totalDiscount = (totalQty >= 3) ? (minPrice * 0.5) : 0;
+    const finalTotal = subTotal - totalDiscount;
+    const totalEl = document.getElementById('total-price');
+    
+    if(totalEl) {
+        totalEl.innerHTML = totalDiscount > 0 ? 
+            `<div style="color:gray; text-decoration:line-through; font-size:14px;">Total: EGP ${subTotal}</div>
+             <div style="color:green;">Discount on cheapest item: -${totalDiscount} EGP</div>
+             <div style="font-size:20px; font-weight:bold;">Final: EGP ${finalTotal}</div>` : 
+            `Total: EGP ${subTotal}`;
+    }
+}
 function removeFromCart(idx) {
     cart.splice(idx, 1);
     renderCartUI();
@@ -557,33 +579,50 @@ function sendOrderToWhatsApp() {
     
     if(!name || !phone || !address) { alert("Please fill all fields! ✍️"); return; }
 
-    let orderText = `*New Order from Hawk Store 🦅*%0A%0A`;
-    orderText += `*Customer Info:*%0A- Name: ${name}%0A- Phone: ${phone}%0A- Address: ${address}%0A%0A`;
+    let orderItems = isQuickOrder ? [{...currentProduct, color: currentVariant.name, size: selectedSize, qty: detailQty}] : cart;
+    let totalQty = orderItems.reduce((sum, item) => sum + item.qty, 0);
+    let minPrice = Math.min(...orderItems.map(item => item.price));
+    let discountApplied = false;
+    let subTotal = 0;
+    let totalDiscount = 0;
+    let itemsSection = "";
 
-    // لو هو "طلب سريع" من صفحة المنتج (حتى لو السلة فيها حاجات تانية)
-    if (isQuickOrder && currentProduct) {
-        const itemTotal = currentProduct.price * detailQty;
-        orderText += `*Quick Order (Direct):*%0A`;
-        orderText += `1. *${currentProduct.name}*%0A`;
-        orderText += `   Color: ${currentVariant.name} | Size: ${selectedSize}%0A`;
-        orderText += `   Qty: ${detailQty} × ${currentProduct.price} = ${itemTotal} EGP%0A%0A`;
-        orderText += `*Total: ${itemTotal} EGP*`;
-    } 
-    // لو العميل داخل من صفحة السلة نفسها (الـ Cart)
-    else if (cart.length > 0) {
-        let grandTotal = 0;
-        orderText += `*Cart Items:*%0A`;
-        cart.forEach((item, index) => {
-            const itemTotal = item.price * item.qty;
-            grandTotal += itemTotal;
-            orderText += `${index + 1}. *${item.name}*%0A`;
-            orderText += `   Color: ${item.color} | Size: ${item.size}%0A`;
-            orderText += `   Qty: ${item.qty} × ${item.price} = ${itemTotal} EGP%0A%0A`;
-        });
-        orderText += `*Grand Total: ${grandTotal} EGP*`;
+    orderItems.forEach((item) => {
+        let itemTotal = item.price * item.qty;
+        subTotal += itemTotal;
+        
+        itemsSection += "Tishert: " + item.name + "\r\n";
+        itemsSection += "Color: " + item.color + "\r\n";
+        itemsSection += "Size: " + item.size + "\r\n";
+        itemsSection += "Quantity: " + item.qty + "\r\n";
+        
+        if (totalQty >= 3 && item.price === minPrice && !discountApplied) {
+            totalDiscount = item.price * 0.5;
+            discountApplied = true;
+            itemsSection += "At tishert: " + item.name + " Has discount 50%\r\n";
+        }
+        itemsSection += "----------------\r\n";
+    });
+
+    let finalTotal = subTotal - totalDiscount;
+
+    // بناء الرسالة النهائية بالأسطر والحساب (كان وبقى)
+    let message = "Name: " + name + "\r\n";
+    message += "Address: " + address + "\r\n";
+    message += "Mobile number: " + phone + "\r\n";
+    message += "-------------------\r\n";
+    message += itemsSection;
+    
+    if (totalDiscount > 0) {
+        message += "Subtotal (Before): " + subTotal + " EGP\r\n";
+        message += "Discount: -" + totalDiscount + " EGP\r\n";
+        message += "Total (After): " + finalTotal + " EGP";
+    } else {
+        message += "Total: " + subTotal + " EGP";
     }
 
-    window.open(`https://wa.me/201118022353?text=${orderText}`);
+    const finalUrl = "https://wa.me/201118022353?text=" + encodeURIComponent(message);
+    window.open(finalUrl, "_blank");
 }
 function openShareMenu() {
     document.getElementById('share-overlay').style.display = 'block';
