@@ -83,7 +83,19 @@
     .color-dot.selected { border-color: var(--brand-blue); transform: scale(1.1); }
     .size-chip { border: 1px solid #ddd; padding: 8px 15px; border-radius: 10px; cursor: pointer; display: inline-block; margin-right: 5px; }
     .size-chip.selected { background: var(--brand-blue); color: white; border-color: var(--brand-blue); }
-
+.out-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ff3b3b;
+    color: white;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 8px;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
     .product-qty-box { 
       display: flex; align-items: center; justify-content: center; 
       gap: 20px; margin: 20px 0; background: var(--light-gray); 
@@ -298,28 +310,28 @@ const products = [
      
     ] 
   },
-  { id: 2, name: "Sakr T-shirt", price: 300, variants: [
+  { id: 2, name: "Sakr T-shirt", price: 300,isOut: false, variants: [
       { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-03 at 3.06.22 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] },
       { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.21 PM (3).jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
   },
-  { id: 3, name: "Sportif T-shirt", price: 250, variants: [
+  { id: 3, name: "Sportif T-shirt", price: 250, isOut: false,variants: [
       { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-03 at 2.15.21 PM (1).jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] },
       { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.21 PM (2).jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
   },
-  { id: 4, name: "Talon Hawk T-shirt", price: 300, variants: [
+  { id: 4, name: "Talon Hawk T-shirt", price: 300, isOut: false,variants: [
       { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.22 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
   },
-   { id: 5, name: "Spider T-shirt", price: 300 , variants: [
+   { id: 5, name: "Spider T-shirt", price: 300 , isOut: false,variants: [
       { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-03 at 2.15.19 PM (1).jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] },
       { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.19 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
      
     
   },
-  { id: 6, name: "Hawk T-shirt", price: 300, variants: [
+  { id: 6, name: "Hawk T-shirt", price: 300,isOut: true, variants: [
       { name: 'Black', hex: '#000', images: ['b.hawk.jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
   },
@@ -373,16 +385,23 @@ function showView(id, btn) {
 
 // Render Products on Home Page
 function renderHome(data = products) {
-  const grid = document.getElementById('product-grid');
-  if(!grid) return;
-  grid.innerHTML = data.map(p => `
-    <div class="card" onclick="openDetails(${p.id})">
-      <div class="fav-btn ${favorites.includes(p.id)?'active':''}" onclick="event.stopPropagation(); toggleFav(${p.id})">♥</div>
-      <div class="img-box">${displayMedia(p.variants[0].images[0])}</div>
-      <div style="margin-top:10px; font-weight:600;">${p.name}</div>
-      <div style="color:var(--brand-blue); font-weight:bold;">EGP ${p.price}</div>
-    </div>
-  `).join('');
+    const grid = document.getElementById('product-grid');
+    if(!grid) return;
+    
+    grid.innerHTML = data.map(p => {
+        // لو المنتج خلص، هنمنع الضغط عليه ونخلي شكله باهت
+        const clickAction = p.isOut ? "" : `onclick="openDetails(${p.id})"`;
+        const outStyle = p.isOut ? "opacity: 0.6; pointer-events: none;" : "";
+
+        return `
+        <div class="card" ${clickAction} style="position: relative; ${outStyle}">
+            ${p.isOut ? '<div class="out-badge">Out of Stock</div>' : ''}
+            <div class="img-box"><img src="${p.variants[0].images[0]}"></div>
+            <div style="margin-top:10px; font-weight:600;">${p.name}</div>
+            <div style="color:var(--brand-blue); font-weight:bold;">EGP ${p.price}</div>
+        </div>
+        `;
+    }).join('');
 }
 
 // Favorites Logic
@@ -513,18 +532,17 @@ function renderCartUI() {
     let subTotal = 0;
     let totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
 
-    // تحديد أرخص سعر في السلة
+    // تحديد أرخص سعر في السلة للخصم
     let minPrice = Math.min(...cart.map(item => item.price));
     let discountApplied = false;
 
     list.innerHTML = cart.map((item, idx) => {
         subTotal += item.price * item.qty;
         
-        // هل دي القطعة الأرخص وهل تحقق شرط الـ 3 قطع؟
         let showDiscountLabel = "";
         if (totalQty >= 3 && item.price === minPrice && !discountApplied) {
             showDiscountLabel = `<br><span style="color:green; font-size:12px; font-weight:bold;">🔥 50% Off on this item!</span>`;
-            discountApplied = true; // عشان نطبق الخصم على قطعة واحدة بس لو في كذا قطعة بنفس السعر
+            discountApplied = true;
         }
 
         return `
@@ -540,16 +558,35 @@ function renderCartUI() {
         </div>`;
     }).join('');
 
+    // --- حسابات الخصم والتوصيل الجديدة ---
     let totalDiscount = (totalQty >= 3) ? (minPrice * 0.5) : 0;
-    const finalTotal = subTotal - totalDiscount;
+    
+    // شرط التوصيل: لو 3 قطع أو أكتر يبقى مجاني، غير كده 40 جنيه
+    let shippingFee = (totalQty >= 3) ? 0 : 40;
+    
+    // الإجمالي النهائي = (المجموع - الخصم) + مصاريف الشحن
+    const finalTotal = (subTotal - totalDiscount) + shippingFee;
+    
     const totalEl = document.getElementById('total-price');
     
     if(totalEl) {
-        totalEl.innerHTML = totalDiscount > 0 ? 
-            `<div style="color:gray; text-decoration:line-through; font-size:14px;">Total: EGP ${subTotal}</div>
-             <div style="color:green;">Discount on cheapest item: -${totalDiscount} EGP</div>
-             <div style="font-size:20px; font-weight:bold;">Final: EGP ${finalTotal}</div>` : 
-            `Total: EGP ${subTotal}`;
+        // تنبيه إن التوصيل للإسكندرية فقط
+        let alexNotice = `<div style="color:#d9534f; font-size:12px; margin-bottom:10px; font-weight:bold;">📍 Delivery in Alexandria only</div>`;
+        
+        let deliveryText = (shippingFee === 0) ? 
+            `<span style="color:green; font-weight:bold;">FREE Delivery</span>` : 
+            `Delivery: ${shippingFee} EGP`;
+
+        totalEl.innerHTML = `
+            ${alexNotice}
+            <div style="font-size:14px; color:gray;">
+                Subtotal: EGP ${subTotal}
+                ${totalDiscount > 0 ? `<br><span style="color:green;">Discount: -EGP ${totalDiscount}</span>` : ''}
+                <br>${deliveryText}
+            </div>
+            <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
+            <div style="font-size:20px; font-weight:bold;">Total: EGP ${finalTotal}</div>
+        `;
     }
 }
 function removeFromCart(idx) {
@@ -572,6 +609,7 @@ function openCheckout() {
         alert("Please select a product first! 🦅");
         return;
     }
+    alert("📍 Delivery is available in Alexandria only.");
     showView('checkout'); 
 }
 
@@ -595,37 +633,44 @@ function sendOrderToWhatsApp() {
         let itemTotal = item.price * item.qty;
         subTotal += itemTotal;
         
-        itemsSection += "Tishert: " + item.name + "\r\n";
+        itemsSection += "T-shirt: " + item.name + "\r\n";
         itemsSection += "Color: " + item.color + "\r\n";
         itemsSection += "Size: " + item.size + "\r\n";
         itemsSection += "Quantity: " + item.qty + "\r\n";
         
+        // نظام الخصم 50% على أرخص قطعة لو اشترى 3 أو أكتر
         if (totalQty >= 3 && item.price === minPrice && !discountApplied) {
             totalDiscount = item.price * 0.5;
             discountApplied = true;
-            itemsSection += "At tishert: " + item.name + " Has discount 50%\r\n";
+            itemsSection += "Special Offer: 50% OFF on this item! ✅\r\n";
         }
         itemsSection += "----------------\r\n";
     });
 
-    let finalTotal = subTotal - totalDiscount;
+    // حساب الشحن بناءً على العدد (0 لو 3 قطع أو أكتر، و40 لو أقل)
+    let deliveryFee = totalQty >= 3 ? 0 : 40;
+    let finalTotal = (subTotal - totalDiscount) + deliveryFee;
 
-    // بناء الرسالة النهائية بالأسطر والحساب (كان وبقى)
-    let message = "Name: " + name + "\r\n";
-    message += "Address: " + address + "\r\n";
-    message += "Mobile number: " + phone + "\r\n";
+    // بناء الرسالة النهائية
+    let message = "📍 New Order (Alexandria Service Only)\r\n";
+    message += "Name: " + name + "\r\n";
+    message += "Address: " + address + " (Alexandria)\r\n";
+    message += "Mobile: " + phone + "\r\n";
     message += "-------------------\r\n";
     message += itemsSection;
     
+    message += "Subtotal: " + subTotal + " EGP\r\n";
+    
     if (totalDiscount > 0) {
-        message += "Subtotal (Before): " + subTotal + " EGP\r\n";
-        message += "Discount: -" + totalDiscount + " EGP\r\n";
-        message += "Total (After): " + finalTotal + " EGP";
-    } else {
-        message += "Total: " + subTotal + " EGP";
+        message += "Discount (50% on 3rd item): -" + totalDiscount + " EGP\r\n";
     }
 
-    const finalUrl = "https://wa.me/201118022353?text=" + encodeURIComponent(message);
+    // إضافة سطر التوصيل للرسالة
+    message += "Delivery: " + (deliveryFee === 0 ? "FREE" : deliveryFee + " EGP") + "\r\n";
+    message += "-------------------\r\n";
+    message += "Grand Total: " + finalTotal + " EGP";
+
+    const finalUrl = "https://wa.me/201276041306?text=" + encodeURIComponent(message);
     window.open(finalUrl, "_blank");
 }
 function openShareMenu() {
