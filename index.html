@@ -675,65 +675,7 @@ function openCheckout() {
 }
 
 // WhatsApp Order Sending (English Format)
-function sendOrderToWhatsApp() {
-    const name = document.getElementById('cust-name').value;
-    const phone = document.getElementById('cust-phone').value;
-    const address = document.getElementById('cust-address').value;
-    
-    if(!name || !phone || !address) { alert("Please fill all fields! ✍️"); return; }
 
-    let orderItems = isQuickOrder ? [{...currentProduct, color: currentVariant.name, size: selectedSize, qty: detailQty}] : cart;
-    let totalQty = orderItems.reduce((sum, item) => sum + item.qty, 0);
-    let minPrice = Math.min(...orderItems.map(item => item.price));
-    let discountApplied = false;
-    let subTotal = 0;
-    let totalDiscount = 0;
-    let itemsSection = "";
-
-    orderItems.forEach((item) => {
-        let itemTotal = item.price * item.qty;
-        subTotal += itemTotal;
-        
-        itemsSection += "T-shirt: " + item.name + "\r\n";
-        itemsSection += "Color: " + item.color + "\r\n";
-        itemsSection += "Size: " + item.size + "\r\n";
-        itemsSection += "Quantity: " + item.qty + "\r\n";
-        
-        // نظام الخصم 50% على أرخص قطعة لو اشترى 3 أو أكتر
-        if (totalQty >= 3 && item.price === minPrice && !discountApplied) {
-            totalDiscount = item.price * 0.5;
-            discountApplied = true;
-            itemsSection += "Special Offer: 50% OFF on this item! ✅\r\n";
-        }
-        itemsSection += "----------------\r\n";
-    });
-
-    // حساب الشحن بناءً على العدد (0 لو 3 قطع أو أكتر، و40 لو أقل)
-    let deliveryFee = totalQty >= 3 ? 0 : 40;
-    let finalTotal = (subTotal - totalDiscount) + deliveryFee;
-
-    // بناء الرسالة النهائية
-    let message = "📍 New Order (Alexandria Service Only)\r\n";
-    message += "Name: " + name + "\r\n";
-    message += "Address: " + address + " (Alexandria)\r\n";
-    message += "Mobile: " + phone + "\r\n";
-    message += "-------------------\r\n";
-    message += itemsSection;
-    
-    message += "Subtotal: " + subTotal + " EGP\r\n";
-    
-    if (totalDiscount > 0) {
-        message += "Discount (50% on 3rd item): -" + totalDiscount + " EGP\r\n";
-    }
-
-    // إضافة سطر التوصيل للرسالة
-    message += "Delivery: " + (deliveryFee === 0 ? "FREE" : deliveryFee + " EGP") + "\r\n";
-    message += "-------------------\r\n";
-    message += "Grand Total: " + finalTotal + " EGP";
-
-    const finalUrl = "https://wa.me/201276041306?text=" + encodeURIComponent(message);
-    window.open(finalUrl, "_blank");
-}
 function openShareMenu() {
     document.getElementById('share-overlay').style.display = 'block';
     document.getElementById('share-menu').style.display = 'block';
@@ -746,6 +688,73 @@ function closeShare() {
 
 function copyProductLink() {
     navigator.clipboard.writeText(window.location.href).then(() => alert("Link Copied!"));
+}
+function sendOrderToWhatsApp() {
+    const name = document.getElementById('cust-name').value;
+    const phone = document.getElementById('cust-phone').value;
+    const address = document.getElementById('cust-address').value;
+    
+    if(!name || !phone || !address) { alert("Please fill all fields! ✍️"); return; }
+
+    let orderItems = isQuickOrder ? [{...currentProduct, color: currentVariant.name, size: selectedSize, qty: detailQty}] : cart;
+    let totalQty = orderItems.reduce((sum, item) => sum + item.qty, 0);
+    let minPrice = Math.min(...orderItems.map(item => item.price));
+    let discountApplied = false;
+    let subTotal = 0;
+    let totalDiscount = 0; // ده اللي هيشيل قيمة الخصم (سواء الـ 50% أو الـ 10%)
+    let itemsSection = "";
+
+    // 1. حساب المجموع وتجميع بيانات المنتجات
+    orderItems.forEach((item) => {
+        let itemTotal = item.price * item.qty;
+        subTotal += itemTotal;
+        
+        itemsSection += "T-shirt: " + item.name + "\r\n";
+        itemsSection += "Color: " + item.color + "\r\n";
+        itemsSection += "Size: " + item.size + "\r\n";
+        itemsSection += "Quantity: " + item.qty + "\r\n";
+        
+        // لو 3 قطع أو أكتر: احسب خصم الـ 50% على أقل سعر
+        if (totalQty >= 3 && item.price === minPrice && !discountApplied) {
+            totalDiscount = item.price * 0.5;
+            discountApplied = true;
+            itemsSection += "Offer: 50% OFF on this item! ✅\r\n";
+        }
+        itemsSection += "----------------\r\n";
+    });
+
+    // 2. لو مفيش خصم 50% (يعني مشتراش 3 قطع)، احسب خصم الـ 10%
+    if (totalQty < 3) {
+        totalDiscount = subTotal * 0.10;
+    }
+
+    // 3. حساب الشحن بناءً على العدد
+    let deliveryFee = totalQty >= 3 ? 0 : 40;
+    let finalTotal = (subTotal - totalDiscount) + deliveryFee;
+
+    // 4. بناء الرسالة النهائية
+    let message = "📍 New Order (Alexandria Service Only)\r\n";
+    message += "Name: " + name + "\r\n";
+    message += "Address: " + address + " (Alexandria)\r\n";
+    message += "Mobile: " + phone + "\r\n";
+    message += "-------------------\r\n";
+    message += itemsSection;
+    
+    message += "Subtotal: " + subTotal + " EGP\r\n";
+    
+    // إظهار الخصم اللي اتطبق في الرسالة
+    if (totalQty >= 3) {
+        message += "Bulk Discount (50% on 3rd): -" + totalDiscount + " EGP\r\n";
+    } else {
+        message += "Promo Discount (10%): -" + totalDiscount.toFixed(2) + " EGP\r\n";
+    }
+
+    message += "Delivery: " + (deliveryFee === 0 ? "FREE" : deliveryFee + " EGP") + "\r\n";
+    message += "-------------------\r\n";
+    message += "Grand Total: " + finalTotal.toFixed(2) + " EGP";
+
+    const finalUrl = "https://wa.me/201276041306?text=" + encodeURIComponent(message);
+    window.open(finalUrl, "_blank");
 }
 
 function shareToWhatsApp() {
