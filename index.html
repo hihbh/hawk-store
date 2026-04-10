@@ -179,9 +179,15 @@
 </div>
 
 <div id="offers" class="view-section">
+    
     <h2>Exclusive Offers 🏷️</h2>
     <div class="list-item" style="background:linear-gradient(45deg, #FFD700, #FFA500); color:black; border:none;">
       <div class="list-img">🔥</div><div><b>buy 2 get the third with discount 50%</b><br><small> </small></div>
+      
+      
+    </div>
+    <div class="list-item" style="background:linear-gradient(45deg, #082860, #082860); color:rgb(253, 253, 253); border:none;">
+      <div class="list-img">🔥</div><div><b>get discount 10% at the tishert For First 10 orders </b><br><small> </small></div>
     </div>
     
 </div>
@@ -389,14 +395,26 @@ function renderHome(data = products) {
     if(!grid) return;
     
     grid.innerHTML = data.map(p => {
-        // لو المنتج خلص، هنمنع الضغط عليه ونخلي شكله باهت
-        const clickAction = p.isOut ? "" : `onclick="openDetails(${p.id})"`;
-        const outStyle = p.isOut ? "opacity: 0.6; pointer-events: none;" : "";
+        const isOut = p.isOut; 
+        const clickAction = isOut ? "" : `onclick="openDetails(${p.id})"`;
+        
+        // التحقق إذا كان المنتج في المفضلة لتبديل شكل القلب
+        const isFavorite = favorites.includes(p.id);
 
         return `
-        <div class="card" ${clickAction} style="position: relative; ${outStyle}">
-            ${p.isOut ? '<div class="out-badge">Out of Stock</div>' : ''}
-            <div class="img-box"><img src="${p.variants[0].images[0]}"></div>
+        <div class="card" style="position: relative; ${isOut ? 'opacity: 0.7;' : ''}">
+           
+            <div onclick="event.stopPropagation(); toggleFav(${p.id})" 
+                 style="position: absolute; top: 10px; right: 10px; cursor: pointer; z-index: 10; font-size: 20px;">
+                 ${isFavorite ? '❤️' : '🤍'}
+            </div>
+            
+            ${isOut ? '<div class="out-badge">Out of Stock</div>' : ''}
+            
+            <div class="img-box" ${clickAction}>
+                <img src="${p.variants[0].images[0]}">
+            </div>
+            
             <div style="margin-top:10px; font-weight:600;">${p.name}</div>
             <div style="color:var(--brand-blue); font-weight:bold;">EGP ${p.price}</div>
         </div>
@@ -404,6 +422,33 @@ function renderHome(data = products) {
     }).join('');
 }
 
+// Favorites Logic - زي ما هي بس ضفنا renderFavUI عشان التحديث يكون فوري في الصفحتين
+function toggleFav(id) {
+    if(favorites.includes(id)) {
+        favorites = favorites.filter(fid => fid !== id);
+    } else {
+        favorites.push(id);
+    }
+    renderHome();  // تحديث الصفحة الرئيسية
+    renderFavUI(); // تحديث صفحة المفضلة لو مفتوحة
+}
+
+function renderFavUI() {
+    const list = document.getElementById('fav-list');
+    if(!list) return;
+    const favItems = products.filter(p => favorites.includes(p.id));
+    if(favItems.length === 0) { 
+        list.innerHTML = "<p style='text-align:center; padding:20px;'>No favorites yet. 🤍</p>"; 
+        return; 
+    }
+    list.innerHTML = favItems.map(p => `
+        <div class="list-item" onclick="openDetails(${p.id})">
+            <div class="list-img">${displayMedia(p.variants[0].images[0])}</div>
+            <div style="flex:1"><b>${p.name}</b></div>
+            <div style="color:red; cursor:pointer;" onclick="event.stopPropagation(); toggleFav(${p.id})">❤️</div>
+        </div>
+    `).join('');
+}
 // Favorites Logic
 function toggleFav(id) {
     if(favorites.includes(id)) favorites = favorites.filter(fid => fid !== id);
@@ -498,7 +543,25 @@ function selectSize(el) {
     el.classList.add('selected');
     selectedSize = el.innerText;
 }
+function renderOtherProducts(currentId) {
+    const grid = document.getElementById('other-products-grid');
+    if(!grid) return;
 
+    // الفلترة السحرية: المنتج الحالي لا، والمنتج اللي خلصان لا
+    const others = products.filter(p => p.id !== currentId && p.isOut !== true);
+
+    if (others.length > 0) {
+        grid.innerHTML = others.map(p => `
+            <div class="card" onclick="openDetails(${p.id})">
+                <div class="img-box">${displayMedia(p.variants[0].images[0])}</div>
+                <div style="font-size:12px; margin-top:5px;">${p.name}</div>
+                <div style="font-weight:bold; font-size:12px;">EGP ${p.price}</div>
+            </div>
+        `).join('');
+    } else {
+        grid.innerHTML = "<p style='font-size:12px; color:gray;'>No other products available right now.</p>";
+    }
+}
 // Cart System
 function addToCart() {
     const existing = cart.find(i => i.id === currentProduct.id && i.color === currentVariant.name && i.size === selectedSize);
@@ -518,7 +581,6 @@ function addToCart() {
     updateCartBadge();
     alert("Added to cart successfully! ✅");
 }
-
 function renderCartUI() {
     const list = document.getElementById('cart-list');
     const footer = document.getElementById('cart-footer');
@@ -531,20 +593,17 @@ function renderCartUI() {
     footer.style.display="block";
     let subTotal = 0;
     let totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
-
-    // تحديد أرخص سعر في السلة للخصم
     let minPrice = Math.min(...cart.map(item => item.price));
     let discountApplied = false;
 
+    // رسم المنتجات وحساب المجموع
     list.innerHTML = cart.map((item, idx) => {
         subTotal += item.price * item.qty;
-        
         let showDiscountLabel = "";
         if (totalQty >= 3 && item.price === minPrice && !discountApplied) {
             showDiscountLabel = `<br><span style="color:green; font-size:12px; font-weight:bold;">🔥 50% Off on this item!</span>`;
             discountApplied = true;
         }
-
         return `
         <div class="list-item">
             <div class="list-img">${displayMedia(item.img)}</div>
@@ -558,37 +617,39 @@ function renderCartUI() {
         </div>`;
     }).join('');
 
-    // --- حسابات الخصم والتوصيل الجديدة ---
-    let totalDiscount = (totalQty >= 3) ? (minPrice * 0.5) : 0;
-    
-    // شرط التوصيل: لو 3 قطع أو أكتر يبقى مجاني، غير كده 40 جنيه
-    let shippingFee = (totalQty >= 3) ? 0 : 40;
-    
-    // الإجمالي النهائي = (المجموع - الخصم) + مصاريف الشحن
-    const finalTotal = (subTotal - totalDiscount) + shippingFee;
-    
+    // --- فصل منطق الخصومات ---
+    let finalDiscount = 0;
+    let discountName = "";
+    let shippingFee = 40;
+
+    if (totalQty >= 3) {
+        // النظام الأول: عرض الـ 3 قطع (50% على الأقل سعراً + شحن مجاني)
+        finalDiscount = minPrice * 0.5;
+        discountName = "Bulk Offer (50% Off 1 item)";
+        shippingFee = 0;
+    } else {
+        // النظام الثاني: خصم الـ 10% (للقطعة والقطعتين)
+        finalDiscount = subTotal * 0.10;
+        discountName = "Discount (10% Off)";
+        shippingFee = 40;
+    }
+
+    const finalTotal = (subTotal - finalDiscount) + shippingFee;
     const totalEl = document.getElementById('total-price');
     
     if(totalEl) {
-        // تنبيه إن التوصيل للإسكندرية فقط
-        let alexNotice = `<div style="color:#d9534f; font-size:12px; margin-bottom:10px; font-weight:bold;">📍 Delivery in Alexandria only</div>`;
-        
-        let deliveryText = (shippingFee === 0) ? 
-            `<span style="color:green; font-weight:bold;">FREE Delivery</span>` : 
-            `Delivery: ${shippingFee} EGP`;
-
         totalEl.innerHTML = `
-            ${alexNotice}
             <div style="font-size:14px; color:gray;">
                 Subtotal: EGP ${subTotal}
-                ${totalDiscount > 0 ? `<br><span style="color:green;">Discount: -EGP ${totalDiscount}</span>` : ''}
-                <br>${deliveryText}
+                <br><span style="color:${totalQty >= 3 ? 'green' : '#007bff'};">${discountName}: -EGP ${finalDiscount.toFixed(2)}</span>
+                <br>Delivery: ${shippingFee === 0 ? '<span style="color:green;">FREE</span>' : shippingFee + ' EGP'}
             </div>
-            <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
-            <div style="font-size:20px; font-weight:bold;">Total: EGP ${finalTotal}</div>
+            <hr>
+            <div style="font-size:20px; font-weight:bold;">Total: EGP ${finalTotal.toFixed(2)}</div>
         `;
     }
-}
+    }
+
 function removeFromCart(idx) {
     cart.splice(idx, 1);
     renderCartUI();
