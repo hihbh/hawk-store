@@ -173,6 +173,7 @@
       <img src="offer1.jpeg" class="banner-img">
       <img src="WhatsApp Image 2026-03-31 at 10.52.28 PM.jpeg" class="banner-img">
       <img src="WhatsApp Image 2026-03-30 at 12.26.11 AM.jpeg" class="banner-img">
+      <img src="WhatsApp Image 2026-04-10 at 3.00.18 PM.jpeg" class="banner-img">
     </div>
   </div>
   <div class="grid" id="product-grid"></div>
@@ -368,7 +369,7 @@ let currentBanner = 0;
 function nextBanner() {
     const track = document.getElementById('banner-track');
     if(track) {
-        currentBanner = (currentBanner + 1) % 3;
+        currentBanner = (currentBanner + 1) % 4;
         track.style.transform = `translateX(-${currentBanner * 100}%)`;
     }
 }
