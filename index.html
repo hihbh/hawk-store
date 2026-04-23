@@ -138,7 +138,49 @@
         display: flex; align-items: center; justify-content: center;
         color: var(--brand-blue); font-size: 18px; z-index: 25; cursor: pointer;
     }
+/* Custom Styles for Admin Dashboard */
+.admin-card {
+    background: white;
+    padding: 15px 18px;
+    border-radius: 20px; /* Highly rounded corners like images */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.04); /* Soft shadow */
+    overflow: hidden;
+}
 
+/* For Profit Chart (Image 3) */
+.chart-area {
+    height: 120px;
+    display: flex;
+    align-items: flex-end; /* Bars start from bottom */
+    justify-content: space-between;
+    padding: 0 5px;
+    border-bottom: 1px solid #eee;
+}
+
+.chart-bar {
+    width: 11%;
+    background: linear-gradient(180deg, rgba(50,96,196,1) 0%, rgba(138,172,242,1) 100%); /* Blue gradient bars */
+    border-radius: 5px 5px 0 0;
+    transition: height 1s ease-out; /* Animates on open */
+}
+
+/* For Product Progress Bars (Image 2) */
+.product-item-stat {
+    width: 100%;
+}
+
+.progress-container {
+    background: #f1f3f6; /* Gray background */
+    height: 8px;
+    border-radius: 10px;
+    overflow: hidden; /* Clips fill */
+}
+
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1s ease-out; /* Animates width */
+}
     .share-menu {
         display: none; position: fixed; bottom: 0; left: 0; width: 100%;
         background: white; border-radius: 20px 20px 0 0; padding: 20px;
@@ -254,7 +296,8 @@
         <p><b>Hawk Store</b> is Precision.Speed.Power.Hawk is the armor for the modern athlete.We combine elite fabrics whith a fearless attitude to help you reach your peak.No limits.Just results.Wear the power.  </p>
     </div>
 </div>
-
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <div id="checkout" class="view-section">
     <button style="background:none; border:1px solid var(--brand-blue); color:var(--brand-blue); padding:5px 15px; border-radius:20px; margin-bottom:20px;" onclick="showView('cart')">← Back</button>
     <div class="order-form">
@@ -280,6 +323,13 @@
     <button class="btn-main" style="margin-top:10px; background:#ddd;" onclick="closeShare()">Cancel</button>
 </div>
 
+
+    
+           
+            <div id="admin-top-products" style="display: flex; flex-direction: column; gap: 15px;">
+                
+                
+</div>
 <nav>
   <div class="nav-btn active" onclick="showView('home', this)"><span>🏠</span>Home</div>
   <div class="nav-btn" onclick="showView('offers', this)"><span>🏷️</span>Offers</div>
@@ -293,6 +343,8 @@
 </nav>
 
 <script>
+    
+   
 // Function to display media or a placeholder icon on error
 function displayMedia(media) {
     if (!media) return '';
@@ -312,9 +364,14 @@ window.onload = function() {
     }
 };
 const products = [
-  { id: 1, name: "Hawk Classic T-shirt", price: 300 , variants: [
+  { id: 1, name: "Hawk Classic T-shirt", price: 250 , variants: [
       { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-03 at 2.15.22 PM (1).jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] },
      
+    ] 
+  },
+  { id: 2, name: "Super man  T-shirt", price: 300,isOut: false, variants: [
+      { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-10 at 2.15.41 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] },
+      { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-10 at 2.20.00 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] }
     ] 
   },
   { id: 2, name: "Sakr T-shirt", price: 300,isOut: false, variants: [
@@ -332,16 +389,29 @@ const products = [
     ] 
   },
    { id: 5, name: "Spider T-shirt", price: 300 , isOut: false,variants: [
-      { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-03 at 2.15.19 PM (1).jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] },
-      { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.19 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
+     { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.19 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] },
+      { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-03 at 2.15.19 PM (1).jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] }
+      
     ] 
      
     
   },
+  { id: 7, name: "Sakr T-shirt", price: 300,isOut: false, variants: [
+      { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-03 at 3.06.22 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] },
+      { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.21 PM (3).jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
+    ] 
+  },
+  
   { id: 6, name: "Hawk T-shirt", price: 300,isOut: true, variants: [
       { name: 'Black', hex: '#000', images: ['b.hawk.jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
   },
+  { id: 8, name: "Hand-shirt", price: 250 , variants: [
+      { name: 'White', hex: '#ffffff', images: ['hand_tishirt-removebg-preview.png','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] },
+     
+    ] 
+  },
+   
 ];
 
 // Global Variables
@@ -690,6 +760,13 @@ function closeShare() {
 function copyProductLink() {
     navigator.clipboard.writeText(window.location.href).then(() => alert("Link Copied!"));
 }
+// متغيرات عالمية (Global) لحفظ الأرقام في الذاكرة حتى لو الصفحة مكنتش مفتوحة
+let realTotalOrders = 0;
+let realTotalRevenue = 0;
+
+// تأكد إنك معرف الـ DB فوق في بداية السكريبت
+const db = firebase.firestore();
+
 function sendOrderToWhatsApp() {
     const name = document.getElementById('cust-name').value;
     const phone = document.getElementById('cust-phone').value;
@@ -757,7 +834,6 @@ function sendOrderToWhatsApp() {
     const finalUrl = "https://wa.me/201276041306?text=" + encodeURIComponent(message);
     window.open(finalUrl, "_blank");
 }
-
 function shareToWhatsApp() {
     const text = `Check this out on Hawk Store: ${currentProduct.name} - ${window.location.href}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
