@@ -384,7 +384,7 @@ const products = [
       { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.21 PM (2).jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
   },
-  { id: 4, name: "Talon Hawk T-shirt", price: 300, isOut: false,variants: [
+  { id: 4, name: "Talon Hawk T-shirt", price: 300, isOut: true,variants: [
       { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.22 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
   },
@@ -831,7 +831,7 @@ function sendOrderToWhatsApp() {
     message += "-------------------\r\n";
     message += "Grand Total: " + finalTotal.toFixed(2) + " EGP";
 
-    const finalUrl = "https://wa.me/201276041306?text=" + encodeURIComponent(message);
+    const finalUrl = "https://wa.me/201118022353?text=" + encodeURIComponent(message);
     window.open(finalUrl, "_blank");
 }
 function shareToWhatsApp() {
