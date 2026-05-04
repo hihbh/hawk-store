@@ -212,10 +212,10 @@
 
   <div class="promo-banner" onclick="nextBanner()">
     <div class="banner-track" id="banner-track">
-      <img src="offer1.jpeg" class="banner-img">
+      
       <img src="WhatsApp Image 2026-03-31 at 10.52.28 PM.jpeg" class="banner-img">
       <img src="WhatsApp Image 2026-03-30 at 12.26.11 AM.jpeg" class="banner-img">
-      <img src="WhatsApp Image 2026-04-10 at 3.00.18 PM.jpeg" class="banner-img">
+     
     </div>
   </div>
   <div class="grid" id="product-grid"></div>
@@ -225,13 +225,11 @@
     
     <h2>Exclusive Offers 🏷️</h2>
     <div class="list-item" style="background:linear-gradient(45deg, #FFD700, #FFA500); color:black; border:none;">
-      <div class="list-img">🔥</div><div><b>buy 2 get the third with discount 50%</b><br><small> </small></div>
+      <div class="list-img">🔥</div><div><b></b><br><small> </small></div>
       
       
     </div>
-    <div class="list-item" style="background:linear-gradient(45deg, #082860, #082860); color:rgb(253, 253, 253); border:none;">
-      <div class="list-img">🔥</div><div><b>get discount 10% at the tishert For First 10 orders </b><br><small> </small></div>
-    </div>
+    
     
 </div>
 
@@ -369,12 +367,12 @@ const products = [
      
     ] 
   },
-  { id: 2, name: "Super man  T-shirt", price: 300,isOut: false, variants: [
+  { id: 2, name: "Super man  T-shirt", price: 270,isOut: false, variants: [
       { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-10 at 2.15.41 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] },
       { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-10 at 2.20.00 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] }
     ] 
   },
-  { id: 2, name: "Sakr T-shirt", price: 300,isOut: false, variants: [
+  { id: 2, name: "Sakr T-shirt", price: 270,isOut: false, variants: [
       { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-03 at 3.06.22 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] },
       { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.21 PM (3).jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
@@ -384,11 +382,11 @@ const products = [
       { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.21 PM (2).jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
   },
-  { id: 4, name: "Talon Hawk T-shirt", price: 300, isOut: true,variants: [
+  { id: 4, name: "Talon Hawk T-shirt", price: 270, isOut: true,variants: [
       { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.22 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
   },
-   { id: 5, name: "Spider T-shirt", price: 300 , isOut: false,variants: [
+   { id: 5, name: "Spider T-shirt", price: 270 , isOut: false,variants: [
      { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.19 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] },
       { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-03 at 2.15.19 PM (1).jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] }
       
@@ -396,17 +394,17 @@ const products = [
      
     
   },
-  { id: 7, name: "Sakr T-shirt", price: 300,isOut: false, variants: [
+  { id: 7, name: "Sakr T-shirt", price: 270,isOut: false, variants: [
       { name: 'White', hex: '#ffffff', images: ['WhatsApp Image 2026-04-03 at 3.06.22 PM.jpeg','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] },
       { name: 'Black', hex: '#000', images: ['WhatsApp Image 2026-04-03 at 2.15.21 PM (3).jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
   },
   
-  { id: 6, name: "Hawk T-shirt", price: 300,isOut: true, variants: [
+  { id: 6, name: "Hawk T-shirt", price: 270,isOut: true, variants: [
       { name: 'Black', hex: '#000', images: ['b.hawk.jpeg','WhatsApp Image 2026-04-03 at 2.15.20 PM.jpeg','size.jpeg'] }
     ] 
   },
-  { id: 8, name: "Hand Ball-shirt", price: 300 , variants: [
+  { id: 8, name: "Hand Ball-shirt", price: 270 , variants: [
       { name: 'White', hex: '#ffffff', images: ['hand_tishirt-removebg-preview.png','WhatsApp Image 2026-04-03 at 2.15.22 PM (2).jpeg','size.jpeg'] },
      
     ] 
@@ -439,7 +437,7 @@ let currentBanner = 0;
 function nextBanner() {
     const track = document.getElementById('banner-track');
     if(track) {
-        currentBanner = (currentBanner + 1) % 4;
+        currentBanner = (currentBanner + 1) % 2;
         track.style.transform = `translateX(-${currentBanner * 100}%)`;
     }
 }
@@ -671,10 +669,8 @@ function renderCartUI() {
     list.innerHTML = cart.map((item, idx) => {
         subTotal += item.price * item.qty;
         let showDiscountLabel = "";
-        if (totalQty >= 3 && item.price === minPrice && !discountApplied) {
-            showDiscountLabel = `<br><span style="color:green; font-size:12px; font-weight:bold;">🔥 50% Off on this item!</span>`;
-            discountApplied = true;
-        }
+        
+            
         return `
         <div class="list-item">
             <div class="list-img">${displayMedia(item.img)}</div>
@@ -693,18 +689,7 @@ function renderCartUI() {
     let discountName = "";
     let shippingFee = 40;
 
-    if (totalQty >= 3) {
-        // النظام الأول: عرض الـ 3 قطع (50% على الأقل سعراً + شحن مجاني)
-        finalDiscount = minPrice * 0.5;
-        discountName = "Bulk Offer (50% Off 1 item)";
-        shippingFee = 0;
-    } else {
-        // النظام الثاني: خصم الـ 10% (للقطعة والقطعتين)
-        finalDiscount = subTotal * 0.10;
-        discountName = "Discount (10% Off)";
-        shippingFee = 40;
-    }
-
+    
     const finalTotal = (subTotal - finalDiscount) + shippingFee;
     const totalEl = document.getElementById('total-price');
     
